@@ -1,0 +1,6 @@
+@AIKnowledgeBot.API_HostAddress = http://localhost:5023
+
+GET {{AIKnowledgeBot.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

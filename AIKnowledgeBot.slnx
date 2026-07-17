@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="AIKnowledgeBot.API/AIKnowledgeBot.API.csproj" />
+  <Project Path="AIKnowledgeBot.InterFace/AIKnowledgeBot.InterFace.csproj" />
+  <Project Path="AIKnowledgeBot.Models/AIKnowledgeBot.Models.csproj" />
+  <Project Path="AIKnowledgeBot.Repositary/AIKnowledgeBot.Repositary.csproj" />
+  <Project Path="AIKnowledgeBot.Services/AIKnowledgeBot.Services.csproj" />
+</Solution>
