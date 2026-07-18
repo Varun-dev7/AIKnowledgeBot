@@ -65,5 +65,7 @@ namespace AIKnowledgeBot.Models.Entities
         public DateTime? LastProcessedDate { get; set; }
 
         public bool IsActive { get; set; } = true;
+
+        public virtual ICollection<DocumentChunk> Chunks { get; set; }= new List<DocumentChunk>();
     }
 }

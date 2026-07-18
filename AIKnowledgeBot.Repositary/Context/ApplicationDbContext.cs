@@ -20,12 +20,14 @@ namespace AIKnowledgeBot.Repositary.Context
         public DbSet<Subject> Subjects => Set<Subject>();
 
         public DbSet<Document> Documents => Set<Document>();
-
+        public DbSet<DocumentChunk> DocumentChunks => Set<DocumentChunk>();
+        public DbSet<DocumentEmbedding> DocumentEmbeddings => Set<DocumentEmbedding>();
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
         }
+
     }
 }

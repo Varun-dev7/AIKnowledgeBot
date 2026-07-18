@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace AIKnowledgeBot.InterFace.IService
 {
-    internal interface IEmbeddingService
+    public interface IEmbeddingService
     {
+        Task GenerateEmbeddingsAsync(Guid documentId);
     }
 }

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AIKnowledgeBot.Models.DTOs
+namespace AIKnowledgeBot.Services.Prompt
 {
-    internal class UploadDocumentDto
+    internal class PromptBuilder
     {
     }
 }

@@ -31,8 +31,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AIKnowledgeBot.InterFace\AIKnowledgeBot.InterFace.csproj" />
     <ProjectReference Include="..\AIKnowledgeBot.Models\AIKnowledgeBot.Models.csproj" />
     <ProjectReference Include="..\AIKnowledgeBot.Repositary\AIKnowledgeBot.Repositary.csproj" />
+    <ProjectReference Include="..\AIKnowledgeBot.Services\AIKnowledgeBot.Services.csproj" />
   </ItemGroup>
 
 </Project>

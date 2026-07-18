@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace AIKnowledgeBot.Models.DTOs
 {
-    internal class ChatResponseDto
+    public class ChatResponseDto
     {
+        public string Answer { get; set; } = string.Empty;
+
+        public List<SourceDto> Sources { get; set; } = new();
     }
 }
