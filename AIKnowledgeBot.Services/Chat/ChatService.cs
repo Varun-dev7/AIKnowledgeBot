@@ -1,6 +1,7 @@
 ﻿using AIKnowledgeBot.InterFace.IAI;
 using AIKnowledgeBot.InterFace.IService;
 using AIKnowledgeBot.Models.DTOs;
+using AIKnowledgeBot.Models.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -57,7 +58,7 @@ namespace AIKnowledgeBot.Services.Chat
             return response;
         }
 
-        private string BuildPrompt(string question, List<Models.Entities.DocumentChunk> chunks)
+        private string BuildPrompt(string question, List<DocumentChunk> chunks)
         {
             var sb = new StringBuilder();
 
@@ -65,34 +66,38 @@ namespace AIKnowledgeBot.Services.Chat
 
             sb.AppendLine();
 
-            sb.AppendLine("Answer ONLY from the provided context.");
+            sb.AppendLine("Use ONLY the information provided in the context.");
+
+            sb.AppendLine("Do NOT use your own knowledge.");
+
+            sb.AppendLine("Do NOT summarize.");
+
+            sb.AppendLine("Do NOT shorten the answer.");
+
+            sb.AppendLine("If the context contains multiple relevant sentences, include ALL of them.");
+
+            sb.AppendLine("Return a complete and detailed answer.");
 
             sb.AppendLine();
 
-            sb.AppendLine("If the answer is not present, reply:");
-
-            sb.AppendLine("\"I couldn't find that information in the uploaded documents.\"");
-
-            sb.AppendLine();
-
-            sb.AppendLine("CONTEXT");
-
-            sb.AppendLine("-----------------------------------------");
+            sb.AppendLine("Context:");
+            sb.AppendLine("--------------------------------");
 
             foreach (var chunk in chunks)
             {
                 sb.AppendLine(chunk.Content);
-
                 sb.AppendLine();
             }
 
-            sb.AppendLine("-----------------------------------------");
+            sb.AppendLine("--------------------------------");
 
             sb.AppendLine();
 
-            sb.AppendLine("QUESTION:");
+            sb.AppendLine($"Question: {question}");
 
-            sb.AppendLine(question);
+            sb.AppendLine();
+
+            sb.AppendLine("Answer:");
 
             return sb.ToString();
         }
