@@ -3,6 +3,7 @@ using AIKnowledgeBot.InterFace.IService;
 using AIKnowledgeBot.Models.Common;
 using AIKnowledgeBot.Models.DTOs.Document;
 using AIKnowledgeBot.Models.Enums;
+using AIKnowledgeBot.Services.Background;
 using AIKnowledgeBot.Services.Pipeline;
 using System;
 using System.Collections.Generic;
@@ -16,16 +17,16 @@ namespace AIKnowledgeBot.Services.Document
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IFileStorageService _fileStorageService;
-        private readonly IKnowledgePipelineService _knowledgePipelineService;
+        private readonly IBackgroundTaskQueue _backgroundTaskQueue;
 
         public DocumentService(
             IUnitOfWork unitOfWork,
             IFileStorageService fileStorageService,
-            IKnowledgePipelineService knowledgePipelineService)
+            IBackgroundTaskQueue backgroundTaskQueue)
         {
             _unitOfWork = unitOfWork;
             _fileStorageService = fileStorageService;
-            _knowledgePipelineService = knowledgePipelineService;
+            _backgroundTaskQueue = backgroundTaskQueue;
         }
 
         public async Task<ApiResponse<DocumentResponseDto>> UploadAsync(UploadDocumentDto dto)
@@ -89,7 +90,7 @@ namespace AIKnowledgeBot.Services.Document
             await _unitOfWork.Documents.AddAsync(document);
 
             await _unitOfWork.SaveChangesAsync();
-            await _knowledgePipelineService.ProcessDocumentAsync(document.Id);
+            await _backgroundTaskQueue.QueueDocumentAsync(document.Id);
 
             response.Success = true;
             response.Message = "Document uploaded successfully.";

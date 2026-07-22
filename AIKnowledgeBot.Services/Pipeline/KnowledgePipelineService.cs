@@ -42,37 +42,58 @@ namespace AIKnowledgeBot.Services.Pipeline
 
             try
             {
-                document.Status = DocumentStatus.Processing;
-
+                // ============================
+                // STEP 1 : Extracting
+                // ============================
+                document.Status = DocumentStatus.Extracting;
+                document.ProcessingMessage = "Extracting document...";
                 await _unitOfWork.Documents.UpdateAsync(document);
                 await _unitOfWork.SaveChangesAsync();
 
-                // Physical file path
                 var physicalPath = _filePathProvider.GetPhysicalPath(document.FilePath);
 
-                // Extract text
                 var pages = await _documentProcessor.ProcessAsync(physicalPath);
 
-                // Chunk
+                // ============================
+                // STEP 2 : Chunking
+                // ============================
+                document.Status = DocumentStatus.Chunking;
+                document.ProcessingMessage = "Creating chunks...";
+                await _unitOfWork.Documents.UpdateAsync(document);
+                await _unitOfWork.SaveChangesAsync();
+
                 var chunks = _chunkService.CreateChunks(document.Id, pages);
 
-                // Save chunks
+                document.TotalChunks = chunks.Count;
+                document.ProcessedChunks = 0;
+
                 await _unitOfWork.Chunks.AddRangeAsync(chunks);
                 await _unitOfWork.SaveChangesAsync();
 
-                // Generate embeddings
+                // ============================
+                // STEP 3 : Embedding
+                // ============================
+                document.Status = DocumentStatus.Embedding;
+                document.ProcessingMessage = "Generating embeddings...";
+                await _unitOfWork.Documents.UpdateAsync(document);
+                await _unitOfWork.SaveChangesAsync();
+
                 await _embeddingService.GenerateEmbeddingsAsync(document.Id);
 
-                // Completed
+                // ============================
+                // STEP 4 : Completed
+                // ============================
                 document.Status = DocumentStatus.Completed;
+                document.ProcessingMessage = "Completed";
                 document.LastProcessedDate = DateTime.UtcNow;
 
                 await _unitOfWork.Documents.UpdateAsync(document);
                 await _unitOfWork.SaveChangesAsync();
             }
-            catch
+            catch (Exception ex)
             {
                 document.Status = DocumentStatus.Failed;
+                document.ProcessingMessage = ex.Message;
 
                 await _unitOfWork.Documents.UpdateAsync(document);
                 await _unitOfWork.SaveChangesAsync();

@@ -6,13 +6,10 @@ using System.Threading.Tasks;
 
 namespace AIKnowledgeBot.Models.Enums
 {
-    public enum DocumentStatus
+    public enum ChatRole
     {
-        Pending = 1,
-        Extracting = 2,
-        Chunking = 3,
-        Embedding = 4,
-        Completed = 5,
-        Failed = 6
+        User = 1,
+        Assistant = 2,
+        System = 3
     }
 }

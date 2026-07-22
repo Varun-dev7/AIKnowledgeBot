@@ -68,6 +68,9 @@ namespace AIKnowledgeBot.API.Extensions
             services.AddScoped<ISemanticSearchService, SemanticSearchService>();
             services.AddScoped<IChatService, ChatService>();
             services.AddScoped<IDocumentEmbeddingRepository, DocumentEmbeddingRepository>();
+            services.AddScoped<IConversationRepository, ConversationRepository>();
+
+            services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
             return services;
         }
     }

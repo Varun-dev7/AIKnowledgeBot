@@ -5,12 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AIKnowledgeBot.Models.DTOs
+namespace AIKnowledgeBot.InterFace.IService
 {
-    public class SearchResultDto
+    public interface IQueryRewriteService
     {
-        public DocumentChunk Chunk { get; set; }
-
-        public double Score { get; set; }
+        Task<string> RewriteAsync(string question,IEnumerable<ChatMessage> history);
     }
 }

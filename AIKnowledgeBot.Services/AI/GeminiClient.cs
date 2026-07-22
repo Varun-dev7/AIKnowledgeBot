@@ -21,13 +21,53 @@ namespace AIKnowledgeBot.Services.AI
         {
             _httpClient = httpClient;
             _settings = options.Value;
+
+            //_httpClient.BaseAddress = new Uri("https://api.openai.com/v1/");
+            _httpClient.BaseAddress =
+    new Uri("https://generativelanguage.googleapis.com/v1beta/");
+            _httpClient.DefaultRequestHeaders.Clear();
+            //_httpClient.DefaultRequestHeaders.Authorization =
+            //    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _settings.ApiKey);
         }
+
+        //public async Task<float[]> GenerateEmbeddingAsync(string text)
+        //{
+        //    var body = new
+        //    {
+        //        model = _settings.EmbeddingModel,
+        //        input = text
+        //    };
+
+        //    var json = JsonSerializer.Serialize(body);
+
+        //    var response = await _httpClient.PostAsync(
+        //        "embeddings",
+        //        new StringContent(json, Encoding.UTF8, "application/json"));
+
+        //    var responseBody = await response.Content.ReadAsStringAsync();
+
+        //    response.EnsureSuccessStatusCode();
+
+        //    using var doc = JsonDocument.Parse(responseBody);
+
+        //    var embedding = doc.RootElement
+        //        .GetProperty("data")[0]
+        //        .GetProperty("embedding");
+
+        //    float[] vector = new float[embedding.GetArrayLength()];
+
+        //    int i = 0;
+
+        //    foreach (var item in embedding.EnumerateArray())
+        //    {
+        //        vector[i++] = item.GetSingle();
+        //    }
+
+        //    return vector;
+        //}
 
         public async Task<float[]> GenerateEmbeddingAsync(string text)
         {
-            var url =
-                $"https://generativelanguage.googleapis.com/v1beta/models/{_settings.EmbeddingModel}:embedContent?key={_settings.ApiKey}";
-
             var body = new
             {
                 model = $"models/{_settings.EmbeddingModel}",
@@ -35,37 +75,37 @@ namespace AIKnowledgeBot.Services.AI
                 {
                     parts = new[]
                     {
-                        new
-                        {
-                            text = text
-                        }
-                    }
+                new
+                {
+                    text
+                }
+            }
                 }
             };
 
             var json = JsonSerializer.Serialize(body);
 
             var response = await _httpClient.PostAsync(
-                url,
+                $"models/{_settings.EmbeddingModel}:embedContent?key={_settings.ApiKey}",
                 new StringContent(json, Encoding.UTF8, "application/json"));
+
+            var responseBody = await response.Content.ReadAsStringAsync();
 
             response.EnsureSuccessStatusCode();
 
-            var responseString = await response.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(responseBody);
 
-            using var document = JsonDocument.Parse(responseString);
-
-            var values = document.RootElement
+            var embedding = doc.RootElement
                 .GetProperty("embedding")
                 .GetProperty("values");
 
-            var vector = new float[values.GetArrayLength()];
+            float[] vector = new float[embedding.GetArrayLength()];
 
             int i = 0;
 
-            foreach (var value in values.EnumerateArray())
+            foreach (var item in embedding.EnumerateArray())
             {
-                vector[i++] = value.GetSingle();
+                vector[i++] = item.GetSingle();
             }
 
             return vector;
@@ -73,44 +113,79 @@ namespace AIKnowledgeBot.Services.AI
 
         public async Task<string> GenerateAnswerAsync(string prompt)
         {
-            var url =
-                $"https://generativelanguage.googleapis.com/v1beta/models/{_settings.ChatModel}:generateContent?key={_settings.ApiKey}";
-
             var body = new
             {
                 contents = new[]
                 {
+            new
+            {
+                parts = new[]
+                {
                     new
                     {
-                        parts = new[]
-                        {
-                            new
-                            {
-                                text = prompt
-                            }
-                        }
+                        text = prompt
                     }
+                }
+            }
+        },
+                generationConfig = new
+                {
+                    temperature = 0.2
                 }
             };
 
             var json = JsonSerializer.Serialize(body);
 
             var response = await _httpClient.PostAsync(
-                url,
+                $"models/{_settings.ChatModel}:generateContent?key={_settings.ApiKey}",
                 new StringContent(json, Encoding.UTF8, "application/json"));
+
+            var responseBody = await response.Content.ReadAsStringAsync();
 
             response.EnsureSuccessStatusCode();
 
-            var responseString = await response.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(responseBody);
 
-            using var document = JsonDocument.Parse(responseString);
-
-            return document.RootElement
+            return doc.RootElement
                 .GetProperty("candidates")[0]
                 .GetProperty("content")
                 .GetProperty("parts")[0]
                 .GetProperty("text")
                 .GetString() ?? string.Empty;
         }
+        //public async Task<string> GenerateAnswerAsync(string prompt)
+        //{
+        //    var body = new
+        //    {
+        //        model = _settings.ChatModel,
+        //        messages = new[]
+        //        {
+        //            new
+        //            {
+        //                role = "user",
+        //                content = prompt
+        //            }
+        //        },
+        //        temperature = 0.2
+        //    };
+
+        //    var json = JsonSerializer.Serialize(body);
+
+        //    var response = await _httpClient.PostAsync(
+        //        "chat/completions",
+        //        new StringContent(json, Encoding.UTF8, "application/json"));
+
+        //    var responseBody = await response.Content.ReadAsStringAsync();
+
+        //    response.EnsureSuccessStatusCode();
+
+        //    using var doc = JsonDocument.Parse(responseBody);
+
+        //    return doc.RootElement
+        //        .GetProperty("choices")[0]
+        //        .GetProperty("message")
+        //        .GetProperty("content")
+        //        .GetString() ?? string.Empty;
+        //}
     }
 }

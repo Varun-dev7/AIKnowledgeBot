@@ -54,6 +54,54 @@ namespace AIKnowledgeBot.Repositary.Migrations
                     b.ToTable("Categories", (string)null);
                 });
 
+            modelBuilder.Entity("AIKnowledgeBot.Models.Entities.ChatMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ConversationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConversationId");
+
+                    b.ToTable("ChatMessages");
+                });
+
+            modelBuilder.Entity("AIKnowledgeBot.Models.Entities.Conversation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Conversations");
+                });
+
             modelBuilder.Entity("AIKnowledgeBot.Models.Entities.Document", b =>
                 {
                     b.Property<Guid>("Id")
@@ -62,6 +110,9 @@ namespace AIKnowledgeBot.Repositary.Migrations
 
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("ContentType")
                         .IsRequired()
@@ -96,6 +147,12 @@ namespace AIKnowledgeBot.Repositary.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<int>("ProcessedChunks")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ProcessingMessage")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
@@ -111,6 +168,9 @@ namespace AIKnowledgeBot.Repositary.Migrations
                         .IsRequired()
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
+
+                    b.Property<int>("TotalChunks")
+                        .HasColumnType("int");
 
                     b.Property<string>("UploadedBy")
                         .IsRequired()
@@ -220,6 +280,17 @@ namespace AIKnowledgeBot.Repositary.Migrations
                     b.ToTable("Subjects", (string)null);
                 });
 
+            modelBuilder.Entity("AIKnowledgeBot.Models.Entities.ChatMessage", b =>
+                {
+                    b.HasOne("AIKnowledgeBot.Models.Entities.Conversation", "Conversation")
+                        .WithMany("Messages")
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Conversation");
+                });
+
             modelBuilder.Entity("AIKnowledgeBot.Models.Entities.Document", b =>
                 {
                     b.HasOne("AIKnowledgeBot.Models.Entities.Category", "Category")
@@ -277,6 +348,11 @@ namespace AIKnowledgeBot.Repositary.Migrations
                     b.Navigation("Documents");
 
                     b.Navigation("Subjects");
+                });
+
+            modelBuilder.Entity("AIKnowledgeBot.Models.Entities.Conversation", b =>
+                {
+                    b.Navigation("Messages");
                 });
 
             modelBuilder.Entity("AIKnowledgeBot.Models.Entities.Document", b =>

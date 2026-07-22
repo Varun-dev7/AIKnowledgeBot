@@ -55,8 +55,6 @@ namespace AIKnowledgeBot.Models.Entities
         [MaxLength(500)]
         public string FilePath { get; set; } = string.Empty;
 
-        public DocumentStatus Status { get; set; } = DocumentStatus.Pending;
-
         [MaxLength(150)]
         public string UploadedBy { get; set; } = "Admin";
 
@@ -67,5 +65,15 @@ namespace AIKnowledgeBot.Models.Entities
         public bool IsActive { get; set; } = true;
 
         public virtual ICollection<DocumentChunk> Chunks { get; set; }= new List<DocumentChunk>();
+
+        public DocumentStatus Status { get; set; } = DocumentStatus.Pending;
+
+        public int TotalChunks { get; set; }
+
+        public int ProcessedChunks { get; set; }
+
+        public string? ProcessingMessage { get; set; }
+
+        public DateTime? CompletedAt { get; set; }
     }
 }

@@ -9,6 +9,7 @@ namespace AIKnowledgeBot.Models.DTOs
 {
     public class ChatRequestDto
     {
+        public Guid? ConversationId { get; set; }
         [Required]
         public string Question { get; set; } = string.Empty;
     }

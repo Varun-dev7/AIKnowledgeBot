@@ -1,7 +1,10 @@
 using AIKnowledgeBot.API.Extensions;
 using AIKnowledgeBot.InterFace.IAI;
+using AIKnowledgeBot.InterFace.IService;
 using AIKnowledgeBot.Models.Common;
 using AIKnowledgeBot.Services.AI;
+using AIKnowledgeBot.Services.Background;
+using AIKnowledgeBot.Services.QueryRewrite;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +19,10 @@ builder.Services.AddRepositories();
 builder.Services.AddDatabase(builder.Configuration);
 builder.Services.Configure<GeminiSettings>(
     builder.Configuration.GetSection("Gemini"));
+builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
 
+builder.Services.AddHostedService<DocumentProcessingWorker>();
+builder.Services.AddScoped<IQueryRewriteService, QueryRewriteService>();
 builder.Services.AddHttpClient<IGeminiClient, GeminiClient>();
 var app = builder.Build();
 

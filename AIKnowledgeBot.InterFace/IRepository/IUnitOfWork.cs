@@ -24,5 +24,9 @@ namespace AIKnowledgeBot.InterFace.IRepository
         IDocumentChunkRepository Chunks { get; }
         // THIS MUST EXIST
         IDocumentEmbeddingRepository Embeddings { get; }
+
+        IConversationRepository Conversations { get; }
+
+        IChatMessageRepository ChatMessages { get; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AIKnowledgeBot.InterFace.IRepository;
+using AIKnowledgeBot.Models.Entities;
 using AIKnowledgeBot.Repositary.Context;
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
@@ -21,6 +22,9 @@ namespace AIKnowledgeBot.Repositary.UnitOfWork
         public ISubjectRepository Subjects { get; }
         public IDocumentChunkRepository Chunks { get; }
         public IDocumentEmbeddingRepository Embeddings { get; }
+        public IConversationRepository Conversations { get; }
+
+        public IChatMessageRepository ChatMessages { get; }
 
         public UnitOfWork(
             ApplicationDbContext context,
@@ -28,7 +32,9 @@ namespace AIKnowledgeBot.Repositary.UnitOfWork
             ICategoryRepository categoryRepository,
             ISubjectRepository subjectRepository,
             IDocumentChunkRepository chunkRepository,
-            IDocumentEmbeddingRepository embeddingRepository)
+            IDocumentEmbeddingRepository embeddingRepository,
+            IConversationRepository conversations,
+            IChatMessageRepository chatMessages)
         {
             _context = context;
             Documents = documentRepository;
@@ -36,6 +42,8 @@ namespace AIKnowledgeBot.Repositary.UnitOfWork
             Subjects = subjectRepository;
             Chunks = chunkRepository;
             Embeddings = embeddingRepository;
+            Conversations = conversations;
+            ChatMessages = chatMessages;
         }
 
         public async Task<int> SaveChangesAsync()
