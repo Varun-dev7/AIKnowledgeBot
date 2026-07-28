@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AIKnowledgeBot.InterFace.IService
+namespace AIKnowledgeBot.Services.Chat
 {
-    public interface ISqlService
+    internal class ChatOrchestrator
     {
-        Task<string> AskAsync(string question);
     }
 }

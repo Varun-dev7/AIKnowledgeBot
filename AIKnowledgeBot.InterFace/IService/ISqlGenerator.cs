@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace AIKnowledgeBot.InterFace.IService
 {
-    public interface ISqlService
+    public interface ISqlGenerator
     {
-        Task<string> AskAsync(string question);
+        Task<string> GenerateSqlAsync(string question);
     }
 }

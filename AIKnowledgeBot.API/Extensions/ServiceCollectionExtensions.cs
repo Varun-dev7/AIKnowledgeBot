@@ -11,8 +11,10 @@ using AIKnowledgeBot.Services.Common;
 using AIKnowledgeBot.Services.Document;
 using AIKnowledgeBot.Services.Embedding;
 using AIKnowledgeBot.Services.Extractors;
+using AIKnowledgeBot.Services.Hybrid;
 using AIKnowledgeBot.Services.Pipeline;
 using AIKnowledgeBot.Services.Search;
+using AIKnowledgeBot.Services.SQL;
 using Microsoft.EntityFrameworkCore;
 namespace AIKnowledgeBot.API.Extensions
 {
@@ -71,6 +73,16 @@ namespace AIKnowledgeBot.API.Extensions
             services.AddScoped<IConversationRepository, ConversationRepository>();
 
             services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
+            services.AddScoped<IIntentDetectionService, IntentDetectionService>();
+            services.AddScoped<ISqlService, SqlService>();
+            services.AddScoped<ISchemaService, SchemaService>();
+            services.AddScoped<SqlPromptBuilder>();
+            services.AddScoped<ISqlGenerator, SqlGenerator>();
+            services.AddScoped<ISqlValidator, SqlValidator>();
+            services.AddScoped<ISqlExecutor, SqlExecutor>();
+            services.AddScoped<IResultSummarizer, ResultSummarizer>();
+            services.AddScoped<ISqlService, SqlService>();
+            services.AddScoped<IHybridSearchService, HybridSearchService>();
             return services;
         }
     }

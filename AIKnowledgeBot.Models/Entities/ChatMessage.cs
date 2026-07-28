@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace AIKnowledgeBot.Models.Entities
@@ -12,7 +13,7 @@ namespace AIKnowledgeBot.Models.Entities
         public Guid Id { get; set; }
 
         public Guid ConversationId { get; set; }
-
+        [JsonIgnore]
         public Conversation Conversation { get; set; }
 
         public ChatRole Role { get; set; }

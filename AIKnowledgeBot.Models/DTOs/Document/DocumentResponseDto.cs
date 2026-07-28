@@ -21,5 +21,13 @@ namespace AIKnowledgeBot.Models.DTOs.Document
         public string Status { get; set; } = string.Empty;
 
         public DateTime UploadedDate { get; set; }
+
+        public int CategoryId { get; set; }
+
+        public int SubjectId { get; set; }
+
+        public string CategoryName { get; set; } = string.Empty;
+
+        public string SubjectName { get; set; } = string.Empty;
     }
 }

@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace AIKnowledgeBot.InterFace.IService
 {
-    public interface ISqlService
+    public interface IResultSummarizer
     {
-        Task<string> AskAsync(string question);
+        Task<string> SummarizeAsync(
+            string question,
+            DataTable table);
     }
 }

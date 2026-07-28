@@ -30,5 +30,12 @@ namespace AIKnowledgeBot.API.Controllers
 
             return Ok(result);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var document = await _documentService.GetAllAsync();
+            return Ok(document);
+        }
     }
 }

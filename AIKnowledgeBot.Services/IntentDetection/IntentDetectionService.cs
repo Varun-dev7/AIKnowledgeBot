@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AIKnowledgeBot.InterFace.IService
+namespace AIKnowledgeBot.Services.IntentDetection
 {
-    public interface ISqlService
+    internal class IntentDetectionService
     {
-        Task<string> AskAsync(string question);
     }
 }

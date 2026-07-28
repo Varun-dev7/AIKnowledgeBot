@@ -4,6 +4,7 @@ using AIKnowledgeBot.InterFace.IService;
 using AIKnowledgeBot.Models.DTOs;
 using AIKnowledgeBot.Models.Entities;
 using AIKnowledgeBot.Models.Enums;
+using AIKnowledgeBot.Services.IntentDetection;
 using AIKnowledgeBot.Services.QueryRewrite;
 using System;
 using System.Collections.Generic;
@@ -19,16 +20,25 @@ namespace AIKnowledgeBot.Services.Chat
         private readonly IGeminiClient _geminiClient;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IQueryRewriteService _queryRewriteService;
+        private readonly IIntentDetectionService _intentDetectionService;
+        private readonly ISqlService _sqlService;
+        private readonly IHybridSearchService _hybridSearchService;
         public ChatService(
             ISemanticSearchService semanticSearch,
             IGeminiClient geminiClient,
             IUnitOfWork unitOfWork,
-            IQueryRewriteService queryRewriteService)
+            IQueryRewriteService queryRewriteService,
+            IIntentDetectionService intentDetectionService,
+            ISqlService sqlService,
+            IHybridSearchService hybridSearchService)
         {
             _semanticSearch = semanticSearch;
             _geminiClient = geminiClient;
             _unitOfWork = unitOfWork;
             _queryRewriteService = queryRewriteService;
+            _intentDetectionService = intentDetectionService;
+            _sqlService = sqlService;
+            _hybridSearchService = hybridSearchService;
         }
 
         public async Task<ChatResponseDto> AskAsync(ChatRequestDto request)
@@ -68,24 +78,60 @@ namespace AIKnowledgeBot.Services.Chat
 
             await _unitOfWork.SaveChangesAsync();
 
-            var history = await _unitOfWork.ChatMessages
-     .GetByConversationIdAsync(conversation.Id);
+            var history = await _unitOfWork.ChatMessages.GetByConversationIdAsync(conversation.Id);
 
             var rewrittenQuestion =await _queryRewriteService.RewriteAsync(request.Question,history);
 
-            var chunks = await _semanticSearch.SearchAsync(rewrittenQuestion);
+            var intent =await _intentDetectionService.DetectAsync(rewrittenQuestion,history);
+            Console.WriteLine($"Intent: {intent.Intent}");
+            List<SearchResultDto> chunks = new();
 
-            if (chunks == null || !chunks.Any())
+            string answer = string.Empty;
+
+            switch (intent.Intent)
             {
-                return new ChatResponseDto
-                {
-                    Answer = "I couldn't find any relevant information in the uploaded documents."
-                };
-            }
+                case QueryIntent.Document:
 
-            var prompt = BuildPrompt(rewrittenQuestion, chunks, history);
-            Console.WriteLine(prompt);
-            var answer = await _geminiClient.GenerateAnswerAsync(prompt);
+                    // Existing RAG Flow
+                    chunks = await _semanticSearch.SearchAsync(rewrittenQuestion);
+
+                    if (!chunks.Any())
+                    {
+                        answer = "I couldn't find any relevant information in the uploaded documents.";
+                        break;
+                    }
+
+                    var prompt = BuildPrompt(rewrittenQuestion, chunks, history);
+                    Console.WriteLine("===== INTENT PROMPT =====");
+                    Console.WriteLine(prompt);
+                    Console.WriteLine("=========================");
+                    answer = await _geminiClient.GenerateContentAsync(prompt);
+                    Console.WriteLine("===== INTENT RESPONSE =====");
+                    Console.WriteLine(answer);
+                    Console.WriteLine("===========================");
+
+                    break;
+
+                case QueryIntent.Sql:
+
+                    answer = await _sqlService.AskAsync(rewrittenQuestion);
+
+                    break;
+
+                case QueryIntent.Hybrid:
+
+                    // Next feature
+                    // SQL + RAG
+                    answer = await _hybridSearchService.AskAsync(rewrittenQuestion,history);
+                    break;
+
+                case QueryIntent.General:
+
+                    answer = await _geminiClient.GenerateContentAsync(rewrittenQuestion);
+
+                    break;
+
+            }
 
             // Save Assistant Message
             await _unitOfWork.ChatMessages.AddAsync(new ChatMessage
@@ -107,17 +153,21 @@ namespace AIKnowledgeBot.Services.Chat
                 Answer = answer
             };
 
-            foreach (var item in chunks)
+            if (chunks.Any())
             {
-                Console.WriteLine("================================");
-                Console.WriteLine(item.Chunk.Content);
-                response.Sources.Add(new SourceDto
+                foreach (var item in chunks)
                 {
-                    DocumentId = item.Chunk.DocumentId,
-                    DocumentName = item.Chunk.Document?.Title ?? "Unknown Document",
-                    PageNumber = item.Chunk.PageNumber,
-                    Score = Math.Round(item.Score, 4)
-                });
+                    Console.WriteLine("================================");
+                    Console.WriteLine(item.Chunk.Content);
+
+                    response.Sources.Add(new SourceDto
+                    {
+                        DocumentId = item.Chunk.DocumentId,
+                        DocumentName = item.Chunk.Document?.Title ?? "Unknown Document",
+                        PageNumber = item.Chunk.PageNumber,
+                        Score = Math.Round(item.Score, 4)
+                    });
+                }
             }
 
             return response;
@@ -128,30 +178,20 @@ namespace AIKnowledgeBot.Services.Chat
             var sb = new StringBuilder();
 
             sb.AppendLine("You are an Enterprise AI Knowledge Assistant.");
-
             sb.AppendLine();
 
             sb.AppendLine("Rules:");
-
-            sb.AppendLine("1. Answer ONLY from the provided context.");
-
+            sb.AppendLine("1. Answer ONLY using the provided context.");
             sb.AppendLine("2. Never use outside knowledge.");
-
-            sb.AppendLine("3. Answer ONLY using the provided context.");
-            sb.AppendLine("\"If the context contains a partial answer, answer using the available information.\"");
-
-            sb.AppendLine("4. If the user asks 'What is...', explain the concept.");
-
-            sb.AppendLine("5. Only reply \"I couldn't find this information in the uploaded documents.\"\r\n   if there is absolutely no relevant information in the context.");
-
-            sb.AppendLine("6. If both are asked, explain the concept first and then mention the page number.");
-
-            sb.AppendLine("7. If multiple pages contain relevant information, mention all relevant page numbers.");
-
-            sb.AppendLine("8. Quote important definitions exactly when possible.");
-
-            sb.AppendLine("9. Do not invent information.");
-
+            sb.AppendLine("3. If the context contains enough information, answer naturally and completely.");
+            sb.AppendLine("4. If the context contains only a partial answer, answer using only the available information.");
+            sb.AppendLine("5. Never invent facts, formulas, definitions, or explanations.");
+            sb.AppendLine("6. Never mention document names, page numbers, chunk numbers, or phrases like 'According to the document', 'The answer appears on Page...', or 'The provided document'.");
+            sb.AppendLine("7. Do not tell the user where the answer was found. Source information is provided separately by the application.");
+            sb.AppendLine("8. If the answer is not found in the context, reply exactly:");
+            sb.AppendLine("\"I couldn't find this information in the uploaded documents.\"");
+            sb.AppendLine("9. Keep the response clear, natural, and professional.");
+            sb.AppendLine("10. Detect the user's intent before answering.\r\n\r\n- If the user asks for only the final answer, return only the final answer.\r\n- If the user asks \"Explain\", \"Why\", \"How\", or \"Solve\", provide a detailed explanation.\r\n- If the user asks \"Where is...\", answer briefly and let the application show the source separately.\r\n- Keep answers concise unless the user explicitly requests more detail.");
             sb.AppendLine();
 
             // ===========================
@@ -173,7 +213,8 @@ namespace AIKnowledgeBot.Services.Chat
 
             foreach (var item in chunks)
             {
-                sb.AppendLine($"Page {item.Chunk.PageNumber}:");
+                sb.AppendLine($"Document: {item.Chunk.Document?.Title}");
+                sb.AppendLine($"Page: {item.Chunk.PageNumber}");
                 sb.AppendLine(item.Chunk.Content);
                 sb.AppendLine();
             }

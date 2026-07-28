@@ -70,7 +70,7 @@ namespace AIKnowledgeBot.Services.Embedding
                     Id = Guid.NewGuid(),
                     ChunkId = chunk.Id,
                     EmbeddingJson = JsonSerializer.Serialize(vector),
-                    Model = "gemini-embedding-001",
+                    Model = "text-embedding-3-small",
                     CreatedAt = DateTime.UtcNow
                 });
                 // Update Progress

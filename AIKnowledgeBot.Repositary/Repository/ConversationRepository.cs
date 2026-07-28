@@ -21,9 +21,19 @@ namespace AIKnowledgeBot.Repositary.Repository
 
         public async Task<Conversation?> GetByIdAsync(Guid id)
         {
-            return await _context.Conversations
-                .Include(x => x.Messages)
-                .FirstOrDefaultAsync(x => x.Id == id);
+            try
+            {
+                return await _context.Conversations
+                    .Include(c => c.Messages.OrderBy(m => m.CreatedAt))
+                    .FirstOrDefaultAsync(c => c.Id == id);
+            }
+            catch (Exception ex)
+            {
+                // TODO: Replace with ILogger
+                Console.WriteLine($"Error retrieving conversation: {ex.Message}");
+
+                throw;
+            }
         }
 
         public async Task<List<Conversation>> GetAllAsync()

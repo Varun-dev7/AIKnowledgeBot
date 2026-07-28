@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace AIKnowledgeBot.InterFace.IService
 {
-    public interface ISqlService
+    public interface ISchemaService
     {
-        Task<string> AskAsync(string question);
+        Task<string> GetDatabaseSchemaAsync();
     }
 }

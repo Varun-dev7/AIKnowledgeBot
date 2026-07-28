@@ -1,7 +1,9 @@
 ﻿using AIKnowledgeBot.InterFace.IService;
 using AIKnowledgeBot.Models.DTOs;
+using AIKnowledgeBot.Services.SQL;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Data;
 
 namespace AIKnowledgeBot.API.Controllers
 {

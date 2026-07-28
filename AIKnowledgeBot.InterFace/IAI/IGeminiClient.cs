@@ -9,7 +9,7 @@ namespace AIKnowledgeBot.InterFace.IAI
     public interface IGeminiClient
     {
         Task<float[]> GenerateEmbeddingAsync(string text);
-
         Task<string> GenerateAnswerAsync(string prompt);
+        Task<string> GenerateContentAsync(string prompt);
     }
 }

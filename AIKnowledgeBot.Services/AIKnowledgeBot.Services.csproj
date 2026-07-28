@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AIKnowledgeBot.InterFace\AIKnowledgeBot.InterFace.csproj" />
+    <ProjectReference Include="..\AIKnowledgeBot.Repositary\AIKnowledgeBot.Repositary.csproj" />
   </ItemGroup>
 
 </Project>

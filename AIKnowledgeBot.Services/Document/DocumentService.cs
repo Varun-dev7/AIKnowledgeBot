@@ -111,7 +111,30 @@ namespace AIKnowledgeBot.Services.Document
 
         public async Task<ApiResponse<List<DocumentResponseDto>>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            var documents = await _unitOfWork.Documents.GetAllAsync();
+
+            var result = documents.Select(x => new DocumentResponseDto
+            {
+                Id = x.Id,
+                Title = x.Title,
+                OriginalFileName = x.OriginalFileName,
+                StoredFileName = x.StoredFileName,
+                FilePath = x.FilePath,
+                Status = x.Status.ToString(),
+                UploadedDate = x.UploadedDate,
+
+                CategoryId = x.CategoryId,
+                SubjectId = x.SubjectId,
+
+                CategoryName = x.Category?.Name ?? "",
+                SubjectName = x.Subject?.Name ?? ""
+            }).ToList();
+
+            return new ApiResponse<List<DocumentResponseDto>>
+            {
+                Success = true,
+                Data = result
+            };
         }
 
         public async Task<ApiResponse<DocumentResponseDto>> GetByIdAsync(Guid id)

@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace AIKnowledgeBot.InterFace.IService
 {
-    public interface ISqlService
+    public interface ISqlValidator
     {
-        Task<string> AskAsync(string question);
+        bool IsSafe(string sql);
     }
 }
