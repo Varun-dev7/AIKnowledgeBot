@@ -4,11 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using AIKnowledgeBot.Models.AI;
 namespace AIKnowledgeBot.InterFace.IService
 {
     public interface IQueryRewriteService
     {
-        Task<string> RewriteAsync(string question,IEnumerable<ChatMessage> history);
+        Task<RewriteResult> RewriteAsync(string question,IEnumerable<ChatMessage> history);
     }
 }

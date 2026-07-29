@@ -80,9 +80,9 @@ namespace AIKnowledgeBot.Services.Chat
 
             var history = await _unitOfWork.ChatMessages.GetByConversationIdAsync(conversation.Id);
 
-            var rewrittenQuestion =await _queryRewriteService.RewriteAsync(request.Question,history);
+            var rewriteResult = await _queryRewriteService.RewriteAsync(request.Question,history);
 
-            var intent =await _intentDetectionService.DetectAsync(rewrittenQuestion,history);
+            var intent = await _intentDetectionService.DetectAsync(rewriteResult.Question,history);
             Console.WriteLine($"Intent: {intent.Intent}");
             List<SearchResultDto> chunks = new();
 
@@ -93,7 +93,7 @@ namespace AIKnowledgeBot.Services.Chat
                 case QueryIntent.Document:
 
                     // Existing RAG Flow
-                    chunks = await _semanticSearch.SearchAsync(rewrittenQuestion);
+                    chunks = await _semanticSearch.SearchAsync(rewriteResult.Question);
 
                     if (!chunks.Any())
                     {
@@ -101,7 +101,9 @@ namespace AIKnowledgeBot.Services.Chat
                         break;
                     }
 
-                    var prompt = BuildPrompt(rewrittenQuestion, chunks, history);
+                    var promptHistory = rewriteResult.IsFollowUp? history.OrderByDescending(x => x.CreatedAt).Take(6).Reverse().ToList(): new List<ChatMessage>();
+
+                    var prompt = BuildPrompt(rewriteResult.Question,chunks,promptHistory);
                     Console.WriteLine("===== INTENT PROMPT =====");
                     Console.WriteLine(prompt);
                     Console.WriteLine("=========================");
@@ -114,7 +116,7 @@ namespace AIKnowledgeBot.Services.Chat
 
                 case QueryIntent.Sql:
 
-                    answer = await _sqlService.AskAsync(rewrittenQuestion);
+                    answer = await _sqlService.AskAsync(rewriteResult.Question);
 
                     break;
 
@@ -122,14 +124,14 @@ namespace AIKnowledgeBot.Services.Chat
 
                     // Next feature
                     // SQL + RAG
-                    answer = await _hybridSearchService.AskAsync(rewrittenQuestion,history);
+                    answer = await _hybridSearchService.AskAsync(rewriteResult.Question, history);
                     break;
 
-                case QueryIntent.General:
+                //case QueryIntent.General:
 
-                    answer = await _geminiClient.GenerateContentAsync(rewrittenQuestion);
+                //    answer = await _geminiClient.GenerateContentAsync(rewriteResult.Question);
 
-                    break;
+                //    break;
 
             }
 

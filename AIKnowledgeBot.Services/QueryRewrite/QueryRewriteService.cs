@@ -1,11 +1,13 @@
 ﻿using AIKnowledgeBot.InterFace.IAI;
 using AIKnowledgeBot.InterFace.IService;
+using AIKnowledgeBot.Models.AI;
 using AIKnowledgeBot.Models.Entities;
 using AIKnowledgeBot.Services.AI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace AIKnowledgeBot.Services.QueryRewrite
@@ -19,7 +21,7 @@ namespace AIKnowledgeBot.Services.QueryRewrite
             _geminiClient = geminiClient;
         }
 
-        public async Task<string> RewriteAsync(
+        public async Task<RewriteResult> RewriteAsync(
      string question,
     IEnumerable<ChatMessage> history)
         {
@@ -32,7 +34,9 @@ You are a query rewriting assistant.
 
 Your job is NOT to answer the question.
 
-Rewrite the user's latest question into a complete standalone question.
+Determine whether the latest question depends on the previous conversation.
+
+Return ONLY valid JSON.
 
 Conversation:
 
@@ -43,14 +47,34 @@ Latest Question:
 {question}
 
 Rules:
-- Keep the original meaning.
-- Include the previous topic if needed.
-- Return ONLY the rewritten question.
+
+- If the latest question is independent, set IsFollowUp=false.
+- If it refers to previous messages (it, this, that, previous answer, explain more, give examples, continue, etc.), set IsFollowUp=true.
+- Rewrite the question into a complete standalone question.
+
+Return EXACTLY:
+
+{{
+  ""Question"": ""..."",
+  ""IsFollowUp"": true
+}}
 ";
 
-            var rewrittenQuestion = await _geminiClient.GenerateAnswerAsync(prompt);
+            var json =
+          await _geminiClient.GenerateAnswerAsync(prompt);
 
-            return rewrittenQuestion.Trim();
+            var result = JsonSerializer.Deserialize<RewriteResult>(
+                json,
+                new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+            return result ?? new RewriteResult
+            {
+                Question = question,
+                IsFollowUp = false
+            };
         }
     }
 }
