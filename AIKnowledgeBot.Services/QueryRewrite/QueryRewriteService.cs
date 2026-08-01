@@ -32,13 +32,13 @@ namespace AIKnowledgeBot.Services.QueryRewrite
             var prompt = $@"
 You are a query rewriting assistant.
 
-Your job is NOT to answer the question.
+Your job is ONLY to determine whether the latest question depends on the previous conversation.
 
-Determine whether the latest question depends on the previous conversation.
+Do NOT answer the question.
+Do NOT add information.
+Do NOT change the user's intent.
 
-Return ONLY valid JSON.
-
-Conversation:
+Conversation History:
 
 {historyText}
 
@@ -48,11 +48,16 @@ Latest Question:
 
 Rules:
 
-- If the latest question is independent, set IsFollowUp=false.
-- If it refers to previous messages (it, this, that, previous answer, explain more, give examples, continue, etc.), set IsFollowUp=true.
-- Rewrite the question into a complete standalone question.
+1. If the latest question is independent, set IsFollowUp = false.
+2. If it depends on previous conversation, set IsFollowUp = true and rewrite it into a standalone question.
+3. If the latest question is already complete, return it exactly as written.
+4. If the latest question is a topic, title, heading, keyword, name, or standalone search phrase, DO NOT rewrite it.
+5. Never expand the question.
+6. Never make the question longer.
+7. Never add words that the user did not write.
+8. Rewrite only when required to resolve references to previous conversation.
 
-Return EXACTLY:
+Return ONLY valid JSON in this format:
 
 {{
   ""Question"": ""..."",

@@ -80,11 +80,14 @@ namespace AIKnowledgeBot.API.Controllers
             if (conversation == null)
                 return NotFound();
 
-            _conversationRepository.DeleteAsync(conversation);
+            await _conversationRepository.DeleteAsync(conversation);
 
             await _unitOfWork.SaveChangesAsync();
 
-            return NoContent();
+            return Ok(new
+            {
+                message = "Conversation deleted successfully."
+            });
         }
     }
 }

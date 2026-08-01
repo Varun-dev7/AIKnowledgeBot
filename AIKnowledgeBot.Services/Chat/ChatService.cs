@@ -81,7 +81,11 @@ namespace AIKnowledgeBot.Services.Chat
             var history = await _unitOfWork.ChatMessages.GetByConversationIdAsync(conversation.Id);
 
             var rewriteResult = await _queryRewriteService.RewriteAsync(request.Question,history);
-
+            Console.WriteLine("=================================");
+            Console.WriteLine($"Original Question : {request.Question}");
+            Console.WriteLine($"Rewritten Question: {rewriteResult.Question}");
+            Console.WriteLine($"IsFollowUp: {rewriteResult.IsFollowUp}");
+            Console.WriteLine("=================================");
             var intent = await _intentDetectionService.DetectAsync(rewriteResult.Question,history);
             Console.WriteLine($"Intent: {intent.Intent}");
             List<SearchResultDto> chunks = new();
@@ -94,7 +98,14 @@ namespace AIKnowledgeBot.Services.Chat
 
                     // Existing RAG Flow
                     chunks = await _semanticSearch.SearchAsync(rewriteResult.Question);
+                    Console.WriteLine("===== SEARCH RESULTS =====");
 
+                    foreach (var chunk in chunks)
+                    {
+                        Console.WriteLine($"Score : {chunk.Score:F4}");
+                        Console.WriteLine(chunk.Chunk.Content);
+                        Console.WriteLine("---------------------------");
+                    }
                     if (!chunks.Any())
                     {
                         answer = "I couldn't find any relevant information in the uploaded documents.";
@@ -185,7 +196,7 @@ namespace AIKnowledgeBot.Services.Chat
             sb.AppendLine("Rules:");
             sb.AppendLine("1. Answer ONLY using the provided context.");
             sb.AppendLine("2. Never use outside knowledge.");
-            sb.AppendLine("3. If the context contains enough information, answer naturally and completely.");
+            sb.AppendLine("3. If the answer exists in the context, copy the relevant sentence(s) exactly as written.");
             sb.AppendLine("4. If the context contains only a partial answer, answer using only the available information.");
             sb.AppendLine("5. Never invent facts, formulas, definitions, or explanations.");
             sb.AppendLine("6. Never mention document names, page numbers, chunk numbers, or phrases like 'According to the document', 'The answer appears on Page...', or 'The provided document'.");
